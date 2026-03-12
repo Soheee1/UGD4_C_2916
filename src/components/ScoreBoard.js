@@ -1,49 +1,56 @@
-    import React from "react";
-    import { FaClock, FaMousePointer, FaSyncAlt, FaRedo, FaCheck } from "react-icons/fa";
+import React from "react";
+import { FaClock, FaMousePointer, FaSyncAlt, FaRedo, FaCheck } from "react-icons/fa";
 
-    function ScoreBoard ({time, moves, matchedCount, totalPairs, onReset}) {
-        const isGameComplete = matchedCount === totalPairs;
+function ScoreBoard({ time, moves, matchedCount, totalPairs, onReset, isGameComplete }) {
+  return (
+    <div className="text-center mb-6">
+      <div className="flex justify-center gap-4 mb-4">
+        <div className="px-4 py-2 rounded-xl min-w-[80px]"
+          style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)' }}
+        >
+          <p className="text-xs text-sky-300 flex items-center justify-center gap-1 font-semibold tracking-widest uppercase">
+            <FaClock /> WAKTU
+          </p>
+          <p className="text-2xl font-bold text-white tabular-nums">{time}</p>
+        </div>
 
-        return (
-            <div className="text-center mb-6">
-                <div className="flex justify-center gap-8 mb-4">
-                    <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg min-w-[80px]">
-                        <p className="text-sm text-indigo-200 flex items-center justify-center gap-1">
-                            <FaClock className="text-indigo-300"/> WAKTU 
-                        </p>
-                        <p className="text-2xl font-bold text-white">{time}</p>
-                    </div>
+        <div className="px-4 py-2 rounded-xl min-w-[80px]"
+          style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)' }}
+        >
+          <p className="text-xs text-violet-300 flex items-center justify-center gap-1 font-semibold tracking-widest uppercase">
+            <FaMousePointer /> PERCOBAAN
+          </p>
+          <p className="text-2xl font-bold text-white tabular-nums">{moves}</p>
+        </div>
 
-                    <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg min-w-[80px]">
-                        <p className="text-sm text-indigo-200 flex items-center justify-center gap-1">
-                            <FaMousePointer className="text-indigo-300" />  PERCOBAAN
-                        </p>
-                        <p className="text-2xl font-bold text-white">{moves}</p>
-                    </div>
+        <div className="px-4 py-2 rounded-xl min-w-[80px]"
+          style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)' }}
+        >
+          <p className="text-xs text-green-300 flex items-center justify-center gap-1 font-semibold tracking-widest uppercase">
+            <FaCheck /> DITEMUKAN
+          </p>
+          <p className="text-2xl font-bold text-white tabular-nums">{matchedCount}/{totalPairs}</p>
+        </div>
+      </div>
 
-                    <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg min-w-[80px]">
-                        <p className="text-sm text-indigo-200 flex items-center justify-center gap-1">
-                            <FaCheck className="text-indigo-300" /> DITEMUKAN
-                        </p>
-                        <p className="text-2xl font-bold text-white">{matchedCount}/{totalPairs}</p>                    
-                    </div>
-                </div>
+      {isGameComplete && (
+        <p className="animate-win font-bold text-lg mb-3"
+          style={{ background: 'linear-gradient(90deg,#fbbf24,#f0abfc,#38bdf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
+        >
+          🎉 Selamat! Menang dalam {moves} percobaan & {time}!
+        </p>
+      )}
 
-                {isGameComplete  && (
-                    <p className="text-yellow-300 font-bold text-lg mb-3 animate-pulse">
-                        🎉🎉 Selamat ! Kamu Menang dalam {time} dan dalam waktu {moves}  🎉🎉
-                    </p>
-                )}
+      <button
+        onClick={onReset}
+        className="btn-levitate px-7 py-2.5 font-bold rounded-full flex items-center gap-2 mx-auto text-indigo-900"
+        style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', boxShadow: '0 4px 15px rgba(251,191,36,0.4)' }}
+      >
+        {isGameComplete ? <FaRedo /> : <FaSyncAlt />}
+        {isGameComplete ? 'Main Lagi' : 'Acak Ulang'}
+      </button>
+    </div>
+  );
+}
 
-                <button 
-                    onClick={onReset}
-                    className="px-6 py-2 bg-yellow-400 text-indigo-900 font-bold rounded-full hover:bg-yellow-300 transition-all duration-200 shadow-lg flex items-center gap-2 mx-auto hover:scale-105"
-                >
-                    {isGameComplete ? <FaRedo /> : <FaSyncAlt />}
-                    {isGameComplete ? 'Main Lagi' : 'Acak Ulang'}
-                </button>
-            </div>
-        );
-    }
-
-    export default ScoreBoard;
+export default ScoreBoard;

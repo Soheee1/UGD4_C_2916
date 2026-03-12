@@ -1,32 +1,50 @@
-import React from "react";
+'use client';
+
+import React, { useState, useEffect } from "react";
 import { FaQuestion } from 'react-icons/fa';
 
+function Card({ card, isFlipped, isMatched, isWrong, onFlip }) {
+  const [spinning, setSpinning] = useState(false);
 
-function Card ({card, isFlipped, isMatched, onFlip}) {
-    const handleClick = () => {
-        if(!isFlipped && !isMatched) {
-            onFlip(card.id);
-        }
-    };
+  const handleClick = () => {
+    if (!isFlipped && !isMatched && !spinning) {
+      setSpinning(true);
+      onFlip(card.id);
+    }
+  };
 
-    const isOpen = isFlipped || isMatched;
-    const IconComponent = card.icon;
+  useEffect(() => {
+    if (spinning) {
+      const t = setTimeout(() => setSpinning(false), 600);
+      return () => clearTimeout(t);
+    }
+  }, [spinning]);
 
-    const cardClass = `w-20 h-20 flex items-center justify-center text-3xl rounded-xl cursor-pointer select-none transition-all duration-300 transform
-    ${isOpen ? 'bg-white shadow-md scale-100' : 'bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg hover:scale-105 hover:shadow-xl'}
-    ${isMatched ? 'opacity-70 ring-2 ring-green-400' : ''} `;
+  const isOpen = isFlipped || isMatched;
+  const IconComponent = card.icon;
 
-    return (
-        <div onClick={handleClick} className={cardClass}>
-            {isOpen ? (
-                <span className="animate-bounce-once">
-                    <IconComponent style = {{color: card.color}} />
-                </span>
-            ) : (  
-                <FaQuestion className="text-white/60 text-xl" />
-            )}
+  let innerClass = 'card-inner';
+  if (isOpen)    innerClass += ' flipped';
+  if (isMatched) innerClass += ' card-matched';
+  if (isWrong && !isMatched)   innerClass += ' card-wrong';
+
+  return (
+    <div className="card-scene" onClick={handleClick}>
+      <div className={innerClass}>
+        <div className="card-front">
+          <FaQuestion className="text-white/60 text-xl" />
         </div>
-    );
+
+        <div className="card-back"
+          style={isMatched ? { border: '2px solid #4ade80' } : isWrong ? { border: '2px solid #f87171' } : {}}
+        >
+          <span className="animate-bounce-once">
+            <IconComponent style={{ color: card.color, fontSize: '1.8rem' }} />
+          </span>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default Card;
