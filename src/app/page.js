@@ -6,7 +6,10 @@ import ScoreBoard from "@/components/ScoreBoard";
 import SnowCanvas from "@/components/Snowcanvas";
 
 import { GiCardJoker } from 'react-icons/gi';
-import { FaAppleAlt, FaLemon, FaHeart, FaStar, FaWater, FaBolt, FaSnowflake, FaCloud } from "react-icons/fa";
+import {
+  FaAppleAlt, FaLemon, FaHeart, FaStar,
+  FaWater, FaBolt, FaSnowflake, FaCloud
+} from "react-icons/fa";
 
 const ICONS = [
   { icon: FaAppleAlt,  color: '#ef4444' },
@@ -50,16 +53,28 @@ const formatTime = (seconds) => {
 };
 
 export default function Home() {
-  const [difficulty, setDifficulty] = useState('Easy');
-  const [cards, setCards] = useState(() => createCards(4));
+  const [difficulty, setDifficulty]     = useState('Easy');
+  const [cards, setCards]               = useState(() => createCards(4));
   const [flippedCards, setFlippedCards] = useState([]);
   const [matchedCards, setMatchedCards] = useState([]);
-  const [wrongCards, setWrongCards] = useState([]);
-  const [moves, setMoves] = useState(0);
-  const [time, setTime] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
-  const timerRef = useRef(null);
+  const [wrongCards, setWrongCards]     = useState([]);
+  const [moves, setMoves]               = useState(0);
+  const [time, setTime]                 = useState(0);
+  const [isRunning, setIsRunning]       = useState(false);
 
+  // Refs — always up-to-date, never stale inside handlers
+  const isCheckingRef = useRef(false);
+  const timerRef      = useRef(null);
+  const cardsRef      = useRef(cards);
+  const flippedRef    = useRef([]);
+  const matchedRef    = useRef([]);
+
+  // Keep refs in sync with state
+  useEffect(() => { cardsRef.current  = cards;        }, [cards]);
+  useEffect(() => { flippedRef.current = flippedCards; }, [flippedCards]);
+  useEffect(() => { matchedRef.current = matchedCards; }, [matchedCards]);
+
+  // Timer
   useEffect(() => {
     if (isRunning) {
       timerRef.current = setInterval(() => setTime(prev => prev + 1), 1000);
@@ -69,6 +84,7 @@ export default function Home() {
     return () => clearInterval(timerRef.current);
   }, [isRunning]);
 
+  // Win detection
   useEffect(() => {
     const totalPairs = DIFFICULTY[difficulty].pairs;
     if (matchedCards.length / 2 === totalPairs && totalPairs > 0) {
@@ -76,47 +92,61 @@ export default function Home() {
     }
   }, [matchedCards, difficulty]);
 
-  const cardsRef = useRef(cards);
-
-  useEffect(() => {
-    cardsRef.current = cards;
-  }, [cards]);
-
-  useEffect(() => {
-  if (flippedCards.length === 2) {
-    const [firstId, secondId] = flippedCards;
-    const firstCard = cards.find(c => c.id === firstId);
-    const secondCard = cards.find(c => c.id === secondId);
-
-    if (!firstCard || !secondCard) return; 
-
-    setMoves(prev => prev + 1);
-
-    if (firstCard.pairId === secondCard.pairId) {
-      setWrongCards([]); 
-      setMatchedCards(prev => [...prev, firstId, secondId]);
-      setFlippedCards([]);
-    } else {
-      setWrongCards([firstId, secondId]);
-      const t = setTimeout(() => {
-        setFlippedCards([]);
-        setWrongCards([]);
-      }, 900);
-      return () => clearTimeout(t);
-    }
-  }
-}, [flippedCards]);
-
   const handleCardFlip = (id) => {
+    if (isCheckingRef.current)          return;
+    if (flippedRef.current.includes(id)) return;
+    if (matchedRef.current.includes(id)) return;
+
     if (!isRunning) setIsRunning(true);
-    if (flippedCards.length < 2 && !flippedCards.includes(id) && !matchedCards.includes(id)) {
-      setFlippedCards(prev => [...prev, id]);
+
+    const newFlipped = [...flippedRef.current, id];
+    flippedRef.current = newFlipped;
+    setFlippedCards(newFlipped);
+
+    if (newFlipped.length === 2) {
+      isCheckingRef.current = true;
+
+      const [firstId, secondId] = newFlipped;
+      const firstCard  = cardsRef.current.find(c => c.id === firstId);
+      const secondCard = cardsRef.current.find(c => c.id === secondId);
+
+      if (!firstCard || !secondCard) {
+        isCheckingRef.current = false;
+        return;
+      }
+
+      setMoves(prev => prev + 1);
+
+      if (firstCard.pairId === secondCard.pairId) {
+        // ✅ CORRECT MATCH
+        const newMatched = [...matchedRef.current, firstId, secondId];
+        matchedRef.current = newMatched;
+        setMatchedCards(newMatched);
+        setWrongCards([]);
+        flippedRef.current = [];
+        setFlippedCards([]);
+        isCheckingRef.current = false;
+      } else {
+        // ❌ WRONG MATCH
+        setWrongCards([firstId, secondId]);
+        setTimeout(() => {
+          flippedRef.current = [];
+          setFlippedCards([]);
+          setWrongCards([]);
+          isCheckingRef.current = false;
+        }, 900);
+      }
     }
   };
 
   const resetGame = (level = difficulty) => {
     clearInterval(timerRef.current);
-    setCards(createCards(DIFFICULTY[level].pairs));
+    isCheckingRef.current = false;
+    const newCards = createCards(DIFFICULTY[level].pairs);
+    cardsRef.current   = newCards;
+    flippedRef.current = [];
+    matchedRef.current = [];
+    setCards(newCards);
     setFlippedCards([]);
     setMatchedCards([]);
     setWrongCards([]);
@@ -130,32 +160,44 @@ export default function Home() {
     resetGame(level);
   };
 
-  const totalPairs = DIFFICULTY[difficulty].pairs;
+  const totalPairs     = DIFFICULTY[difficulty].pairs;
   const isGameComplete = matchedCards.length / 2 === totalPairs;
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center p-4"
+    <div
+      className="relative min-h-screen flex flex-col items-center justify-center p-3 sm:p-4 md:p-8"
       style={{ background: 'linear-gradient(135deg, #0a0a2e 0%, #0d1b4b 30%, #1a0a3e 60%, #0a1a2e 100%)' }}
     >
       <SnowCanvas />
 
-      <div className="fixed top-1/4 left-1/4 w-96 h-96 rounded-full pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(56,189,248,0.08) 0%, transparent 70%)', filter: 'blur(40px)' }} />
-      <div className="fixed bottom-1/4 right-1/4 w-96 h-96 rounded-full pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(167,139,250,0.08) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+      {/* Ambient glow orbs */}
+      <div
+        className="fixed top-1/4 left-1/4 w-48 h-48 sm:w-72 sm:h-72 md:w-96 md:h-96 rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(56,189,248,0.08) 0%, transparent 70%)', filter: 'blur(40px)' }}
+      />
+      <div
+        className="fixed bottom-1/4 right-1/4 w-48 h-48 sm:w-72 sm:h-72 md:w-96 md:h-96 rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(167,139,250,0.08) 0%, transparent 70%)', filter: 'blur(40px)' }}
+      />
 
-      <div className="relative z-10 flex flex-col items-center">
-        <h1 className="text-4xl font-bold mb-5 flex items-center gap-3">
-          <GiCardJoker className="text-yellow-300 text-4xl drop-shadow-lg" style={{ filter: 'drop-shadow(0 0 8px rgba(250,204,21,0.6))' }} />
+      <div className="relative z-10 flex flex-col items-center w-full max-w-xs sm:max-w-sm md:max-w-lg">
+
+        {/* Title */}
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 md:mb-5 flex items-center gap-2 sm:gap-3">
+          <GiCardJoker
+            className="text-yellow-300 text-2xl sm:text-3xl md:text-4xl drop-shadow-lg"
+            style={{ filter: 'drop-shadow(0 0 8px rgba(250,204,21,0.6))' }}
+          />
           <span className="title-gradient cursor-default">Memory Card</span>
         </h1>
 
-        <div className="flex gap-3 mb-5">
+        {/* Difficulty Selector */}
+        <div className="flex gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-5">
           {Object.keys(DIFFICULTY).map((level) => (
             <button
               key={level}
               onClick={() => handleDifficulty(level)}
-              className={`btn-diff px-5 py-1.5 rounded-full font-semibold text-sm border
+              className={`btn-diff px-3 sm:px-4 md:px-5 py-1 sm:py-1.5 rounded-full font-semibold text-xs sm:text-sm border transition-all
                 ${difficulty === level
                   ? 'active bg-yellow-400 text-indigo-900 border-yellow-300'
                   : 'bg-white/10 text-white border-white/20 hover:bg-white/20 hover:border-white/40'
@@ -166,6 +208,7 @@ export default function Home() {
           ))}
         </div>
 
+        {/* Scoreboard */}
         <ScoreBoard
           time={formatTime(time)}
           moves={moves}
@@ -175,8 +218,14 @@ export default function Home() {
           isGameComplete={isGameComplete}
         />
 
-        <div className="p-6 rounded-2xl shadow-2xl"
-          style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.1)' }}
+        {/* Game Board */}
+        <div
+          className="p-3 sm:p-4 md:p-6 rounded-2xl shadow-2xl w-full"
+          style={{
+            background: 'rgba(255,255,255,0.05)',
+            backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255,255,255,0.1)',
+          }}
         >
           <GameBoard
             cards={cards}

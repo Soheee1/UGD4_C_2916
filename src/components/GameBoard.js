@@ -4,7 +4,7 @@ import Card from "./Card";
 function GameBoard({ cards, flippedCards, matchedCards, wrongCards = [], onFlip, cols = 4 }) {
   return (
     <div
-      className="grid gap-4 justify-items-center"
+      className="grid gap-2 sm:gap-3 md:gap-4 justify-items-center"
       style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
     >
       {cards.map(card => (

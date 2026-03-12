@@ -39,8 +39,8 @@ export default function SnowCanvas() {
         f.y += f.speed;
         f.x += f.drift;
         if (f.y > canvas.height + 5) { f.y = -5; f.x = Math.random() * canvas.width; }
-        if (f.x > canvas.width + 5)  f.x = -5;
-        if (f.x < -5) f.x = canvas.width + 5;
+        if (f.x > canvas.width  + 5) f.x = -5;
+        if (f.x < -5)                f.x = canvas.width + 5;
       });
       animId = requestAnimationFrame(draw);
     };
