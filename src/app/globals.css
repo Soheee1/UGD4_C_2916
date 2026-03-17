@@ -37,20 +37,24 @@ body {
 }
 
 /* Title gradient */
-.title-gradient {
+.title-gradient-anim-spin {
   background: linear-gradient(90deg, #a78bfa, #38bdf8, #f0abfc, #a78bfa);
   background-size: 300% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: title-flow 4s ease-in-out infinite;
   display: inline-block;
-  transition: letter-spacing 0.4s ease, transform 0.4s ease;
+  animation: 
+    title-flow 4s ease-in-out infinite,
+    title-float 3s ease-in-out infinite,
+    title-spread 5s ease-in-out infinite;
 }
+
 .title-gradient:hover {
   letter-spacing: 0.08em;
   transform: translateY(-3px);
 }
+
 @keyframes title-flow {
   0%, 100% { background-position: 0% 50%; }
   50%       { background-position: 100% 50%; }
@@ -170,3 +174,4 @@ body {
 .animate-win {
   animation: win-pulse 1.2s ease-in-out infinite;
 }
+

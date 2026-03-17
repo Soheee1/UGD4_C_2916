@@ -53,4 +53,4 @@ export default function SnowCanvas() {
   }, []);
 
   return <canvas ref={canvasRef} id="snow-canvas" />;
-}
+}1

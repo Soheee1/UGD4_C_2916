@@ -188,7 +188,7 @@ export default function Home() {
             className="text-yellow-300 text-2xl sm:text-3xl md:text-4xl drop-shadow-lg"
             style={{ filter: 'drop-shadow(0 0 8px rgba(250,204,21,0.6))' }}
           />
-          <span className="title-gradient cursor-default">Memory Card</span>
+          <span className="title-gradient-anim-spin cursor-default">Memory Card</span>
         </h1>
 
         {/* Difficulty Selector */}

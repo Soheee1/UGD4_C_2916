@@ -67,7 +67,7 @@ function ScoreBoard({ time, moves, matchedCount, totalPairs, onReset, isGameComp
             WebkitTextFillColor: 'transparent',
           }}
         >
-          🎉 Selamat! Menang dalam {moves} percobaan & {time}!
+          🎉 Selamat! Menang dalam {moves} percobaan & dalam waktu {time}!
         </p>
       )}
 
