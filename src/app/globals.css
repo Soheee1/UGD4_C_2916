@@ -50,7 +50,7 @@ body {
     title-spread 5s ease-in-out infinite;
 }
 
-.title-gradient:hover {
+.title-gradient-anim-spin {
   letter-spacing: 0.08em;
   transform: translateY(-3px);
 }
